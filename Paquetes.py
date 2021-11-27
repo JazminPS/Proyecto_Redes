@@ -1,6 +1,7 @@
 class Grado:
-    def __init__(self,id_grado):
+    def __init__(self,id_grado,N):
         self.id_grado = id_grado
+        self.nodo = []
 
     #getters y setters
     def set_id_grado(self,id_grado):
@@ -9,12 +10,20 @@ class Grado:
 
     def get_id_grado(self):
         return self.id_grado
+    
 
+    def set_N(self,N):
+        self.N = N
+
+    
+    def get_N(self):
+        return self.N
+    
 
 class Nodo:
-    def __init__(self,id_nodo):
+    def __init__(self,id_nodo,grado):
         self.id_nodo = id_nodo
-        buffer = []
+        self.buffer = [None] * 15
 
     #getters y setters
     def set_id_nodo(self,id_nodo):
@@ -23,16 +32,26 @@ class Nodo:
 
     def get_id_nodo(self):
         return self.id_nodo
+    
+
+    def set_grado(self,grado):
+        self.grado = grado
+    
+
+    def get_grado(self):
+        return self.grado
 
 
 class Paquete:
-    def __init__(self,id_paquete,nodo,grado,ta,t_NodoSink):
+    def __init__(self,id_paquete,nodo,ta,t_NodoSink):
         self.id_paquete = id_paquete
         self.nodo = nodo
         self.grado = grado
         self.ta = ta
         self.t_NodoSink = t_NodoSink
-        self.latencia_entrega = self.t_NodoSink - self.ta
+        
+        if t_NodoSink != 0:
+            self.retardoSourceToEnd = self.t_NodoSink - self.ta
 
     #getters y setters
     def set_id_paquete(self,id_paquete):
@@ -49,14 +68,6 @@ class Paquete:
 
     def get_nodo(self):
         return self.nodo
-    
-
-    def set_grado(self,grado):
-        self.grado = grado
-    
-
-    def get_grado(self):
-        return self.grado
 
     
     def set_ta(self,ta):
@@ -76,4 +87,4 @@ class Paquete:
 
 
     def get_latenciaEntrega(self):
-        return self.latencia_entrega
+        return self.retardoSourceToEnd
