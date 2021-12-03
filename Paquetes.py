@@ -32,13 +32,13 @@ Tcycle = (E + 2) * Tslot
 #Matriz del sistema
 Nodos = np.zeros((N[n],H))
 
-collisions = np.zeros((1, 7))
-fullbuffer = np.zeros((1, 7))
-nodeTimes = np.zeros((1, 7))
-countersuccess = np.zeros((1, 7))
-counterontransit = np.zeros((1, 7))
-piepackages = np.zeros((1, 3))
-transpergrade = np.zeros((1, 7))
+collisions = [0] * 7
+fullbuffer = [0] * 7
+nodeTimes = [0] * 7
+countersuccess = [0] * 7
+counterontransit = [0] * 7
+piepackages = [0] * 3
+transpergrade = [0] * 7
 
 hashMap = {}
 
@@ -55,7 +55,7 @@ final = 0
 counter = 0
 
 Pa = np.zeros((1,5))
-contendientes = np.zeros((1, N[n]))
+contendientes = [0] * N[n]
 numPaquete = 0
 
 #Generacion de paquetes
@@ -87,13 +87,33 @@ for i in range (1,1330000+1):
     
     ta = tsim + nuevot
 
-    if(round(Decimal(str(i))%Decimal(str(Tcycle))) == 0):
+    if(Decimal(str(i))%Decimal(str(Tcycle)) == 0):
         #Transmisión, recorremos desde nodo más alejado
-        for grado in range(H-1,0):
-            for fila in range(0,N[n]):
-                if(Nodos[fila,grado] != 0):
-                    contendientes[0][fila] = randint(0,W[n])
+        for grado in range(H-1,0,-1):
+            for nodo in range(0,N[n]):
+                if(Nodos[nodo,grado] != 0):
+                    contendientes[nodo] = randint(0,W[n]-1)
                 else:
-                    contendientes[0][fila] = None
-
+                    contendientes[nodo] = None
                 
+            #Colisiones
+            #El contador más pequeño es el que transmite
+            nodoGanador = min(filter(lambda x: x is not None, contendientes)) if any(contendientes) else None
+            colisiones = np.where(contendientes == nodoGanador)
+            print(colisiones)
+            if colisiones.size > 1:
+                #Hay una colisión
+                for index_colision in range(0,colisiones.size):
+                    #Eliminamos los paquetes que colisionaron
+                    #Actualizar HASH
+                    llaveHash = "{}{}".format(colisiones[0,index_colision],grado)
+                    aux =  hashMap[llaveHash]
+                    #Pa[aux[0,0],4] = -1 #Actualizar Pa
+                    #Pa = np.vstack([Pa,np.zeros((1,5))]) 
+                    aux[0,0] = 0
+                    aux[0,14] = 0
+                    hashMap[llaveHash] = aux
+
+                    #Actualizar NODOS
+                    Nodos[colisiones[0,index_colision], grado] = Nodos[colisiones[0,index_colision], grado] - 1
+
