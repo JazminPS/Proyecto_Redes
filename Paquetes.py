@@ -46,7 +46,6 @@ for k in range(0,N[n]):
     for v in range(0,H):
         hashMap["{}{}".format(k,v)] = [0] * K
        
-    
 #Garantiza que hay almenos un arribo al inicar la simulacion 
 ta = -1
 pg = 0
@@ -59,25 +58,25 @@ contendientes = [0] * N[n]
 numPaquete = 0
 
 #Generacion de paquetes
-for i in range (1,1330000+1):
-    if(ta <= tsim):
+for i in range (1,1330000 + 1):
+    if ta <= tsim:
         landa2 = landa[l]*N[n]*H
         U = (1e6*random())/1e6
         nuevot = -(1/landa2)*log10(1-U)
         nodo = randint(0,N[n]-1)
         grado = randint(0,H-1)
 
-        if(Nodos[nodo,grado] < 15):
+        if Nodos[nodo,grado] < 15:
             Nodos[nodo,grado] = Nodos[nodo,grado] + 1
             llave = str(nodo) + str(grado)
             aux = hashMap[llave]
             index = [indice for indice, item1 in enumerate(aux) if item1 == 0]
-                    
+            
             if(len(index) != 0):
                 pg = pg + 1
                 aux[index[0]] = pg
                 hashMap[llave] = aux
-                aux = 0                  
+                aux = 0              
 
             Pa[pg-1][0] = pg
             Pa[pg-1][1] = nodo
@@ -85,9 +84,9 @@ for i in range (1,1330000+1):
             Pa[pg-1][3] = ta
             Pa = np.vstack([Pa,np.zeros((1,5))])  
     
-    ta = tsim + nuevot
+        ta = tsim + nuevot
 
-    if(Decimal(str(i))%Decimal(str(Tcycle)) == 0):
+    if Decimal(str(i))%Decimal(str(Tcycle)) == 0:
         #Transmisión, recorremos desde nodo más alejado
         for grado in range(H-1,0,-1):
             for nodo in range(0,N[n]):
@@ -98,23 +97,20 @@ for i in range (1,1330000+1):
             #Colisiones
             #El contador más pequeño es el que transmite
             nodoGanador = min(filter(lambda x: x is not None, contendientes)) if any(contendientes) else None
-            #colisiones = np.where(contendientes == nodoGanador)[1]
             colisiones = [indice for indice, item in enumerate(contendientes) if item == nodoGanador]
-            #colisiones = np.matrix([0,4])
-            #print(colisiones.size)
 
             if len(colisiones) > 1:
                 #Hay una colisión
                 for index_colision in range(0,len(colisiones)):
                     #Eliminamos los paquetes que colisionaron
                     #Actualizar HASH
-                    llaveHash = "{}{}".format(colisiones[index_colision],grado)
-                    aux =  hashMap[llaveHash]
+                    llaveHash1 = "{}{}".format(colisiones[index_colision],grado)
+                    aux1 =  hashMap[llaveHash1]
                     #Pa[aux[0,0],4] = -1 #Actualizar Pa
                     #Pa = np.vstack([Pa,np.zeros((1,5))]) 
-                    if len(aux) != 0:
-                        aux.pop(0)
-                    hashMap[llaveHash] = aux
+                    aux1.pop(0)
+                    aux1.append(0)
+                    hashMap[llaveHash1] = aux1
 
                     #Actualizar NODOS
                     Nodos[colisiones[index_colision], grado] = Nodos[colisiones[index_colision], grado] - 1
@@ -123,10 +119,31 @@ for i in range (1,1330000+1):
                 if nodoGanador != None:
                     #Restar al buffer del hashMap paquete del nodo (Grado I)
                     indexNodo = [indice for indice, item in enumerate(contendientes) if item == nodoGanador]
-                    llaveHash = "{}{}".format(indexNodo[0],grado)
-                    aux =  hashMap[llaveHash]
-                    if len(aux) != 0:
-                        numPaquete = aux[0]
-                        aux.pop(0)
-                    hashMap[llaveHash] = aux
-                    Nodos[indexNodo, grado] = Nodos[indexNodo, grado] - 1 #Actualizar matriz Nodos (grado I)
+                    llaveHash2 = "{}{}".format(indexNodo[0],grado)
+                    aux2 =  hashMap[llaveHash2]
+                    numPaquete = aux2[0]
+                    aux2.pop(0)
+                    aux2.append(0)
+                    hashMap[llaveHash2] = aux2
+                    Nodos[indexNodo[0], grado] = Nodos[indexNodo[0], grado] - 1 #Actualizar matriz Nodos (grado I)
+
+                    if grado - 1 != 0: #Sumar al buffer del hashMap paquete del nodo (Grado I -1)
+                        llaveHash3 = "{}{}".format(indexNodo[0],grado - 1)
+                        aux3 =  hashMap[llaveHash3]
+                        a = [indice for indice, item1 in enumerate(aux3) if item1 == 0]
+                        aux3[a[0]] = numPaquete
+
+                        if aux3[14] == 0:
+                            transpergrade[grado] = transpergrade[grado] + 1
+                            hashMap[llaveHash3] =  aux3
+                            Nodos[indexNodo, grado - 1] = Nodos[indexNodo, grado -1] + 1 #Actualizar matriz Nodos (grado I-1)
+                        else:
+                            pass
+                    
+                    else:
+                        transpergrade[grado] = transpergrade[grado] + 1
+        
+        counter = counter +1
+
+        #Termina Transmitir cada ciclo de trabajo.
+    tsim = tsim + Tcycle
