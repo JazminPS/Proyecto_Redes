@@ -44,7 +44,7 @@ hashMap = {}
 
 for k in range(0,N[n]):
     for v in range(0,H):
-        hashMap["{}{}".format(k,v)] = np.zeros((1,K))
+        hashMap["{}{}".format(k,v)] = [0] * K
        
     
 #Garantiza que hay almenos un arribo al inicar la simulacion 
@@ -71,11 +71,11 @@ for i in range (1,1330000+1):
             Nodos[nodo,grado] = Nodos[nodo,grado] + 1
             llave = str(nodo) + str(grado)
             aux = hashMap[llave]
-            index = np.where(aux == 0)[1]
+            index = [indice for indice, item1 in enumerate(aux) if item1 == 0]
                     
-            if(index.size != 0):
+            if(len(index) != 0):
                 pg = pg + 1
-                aux[0][index[0]] = pg
+                aux[index[0]] = pg
                 hashMap[llave] = aux
                 aux = 0                  
 
@@ -95,25 +95,38 @@ for i in range (1,1330000+1):
                     contendientes[nodo] = randint(0,W[n]-1)
                 else:
                     contendientes[nodo] = None
-                
             #Colisiones
             #El contador más pequeño es el que transmite
             nodoGanador = min(filter(lambda x: x is not None, contendientes)) if any(contendientes) else None
-            colisiones = np.where(contendientes == nodoGanador)
-            print(colisiones)
-            if colisiones.size > 1:
+            #colisiones = np.where(contendientes == nodoGanador)[1]
+            colisiones = [indice for indice, item in enumerate(contendientes) if item == nodoGanador]
+            #colisiones = np.matrix([0,4])
+            #print(colisiones.size)
+
+            if len(colisiones) > 1:
                 #Hay una colisión
-                for index_colision in range(0,colisiones.size):
+                for index_colision in range(0,len(colisiones)):
                     #Eliminamos los paquetes que colisionaron
                     #Actualizar HASH
-                    llaveHash = "{}{}".format(colisiones[0,index_colision],grado)
+                    llaveHash = "{}{}".format(colisiones[index_colision],grado)
                     aux =  hashMap[llaveHash]
                     #Pa[aux[0,0],4] = -1 #Actualizar Pa
                     #Pa = np.vstack([Pa,np.zeros((1,5))]) 
-                    aux[0,0] = 0
-                    aux[0,14] = 0
+                    if len(aux) != 0:
+                        aux.pop(0)
                     hashMap[llaveHash] = aux
 
                     #Actualizar NODOS
-                    Nodos[colisiones[0,index_colision], grado] = Nodos[colisiones[0,index_colision], grado] - 1
-
+                    Nodos[colisiones[index_colision], grado] = Nodos[colisiones[index_colision], grado] - 1
+            else:
+                #Revisar si hay algo que transmitir al menos un paquete en el grado.
+                if nodoGanador != None:
+                    #Restar al buffer del hashMap paquete del nodo (Grado I)
+                    indexNodo = [indice for indice, item in enumerate(contendientes) if item == nodoGanador]
+                    llaveHash = "{}{}".format(indexNodo[0],grado)
+                    aux =  hashMap[llaveHash]
+                    if len(aux) != 0:
+                        numPaquete = aux[0]
+                        aux.pop(0)
+                    hashMap[llaveHash] = aux
+                    Nodos[indexNodo, grado] = Nodos[indexNodo, grado] - 1 #Actualizar matriz Nodos (grado I)
