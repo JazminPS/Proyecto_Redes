@@ -61,7 +61,7 @@ x = 0
 y = 0
 r=0
 #Generacion de paquetes
-for i in range (1,6*1330000 + 1):
+for i in range (1,1330000 + 1):
     if ta < tsim:
         U = (1e6*random())/1e6
         nuevot = -(1/landa2)*log10(1-U)
