@@ -129,6 +129,7 @@ for i in range (1,6*1330000 + 1):
     
                         if value[14] == 0:
                             value[a[0]] = Nopackage
+                            troughput[grade] = troughput[grade] + 1
                             buffer[key] =  value
                             system[node[0], grade - 1] = system[node[0], grade - 1] + 1
                         else:
@@ -170,6 +171,12 @@ plt.title('Lost Packages')
 plt.plot(grades,lostpackages,marker='o',color='g')
 
 plt.figure(num=2,figsize=(8,6))
+plt.xlabel('Grades')
+plt.ylabel('Paquetes/ciclo')
+plt.title('Trougput')
+plt.plot(grades,troughput,marker='o',color='g')
+
+plt.figure(num=3,figsize=(8,6))
 plt.xlabel('Grades')
 plt.ylabel('Time[s]')
 plt.title('Delay Source to End')
